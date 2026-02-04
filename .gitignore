@@ -1,0 +1,11 @@
+node_modules/
+lib/
+dist/
+
+.firebase/
+.firebaserc
+firebase.json
+
+.env
+.vscode/
+.DS_Store
