@@ -3,7 +3,7 @@ name: Deploy Backend to Firebase Functions
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy-functions:
