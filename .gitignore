@@ -3,8 +3,6 @@ lib/
 dist/
 
 .firebase/
-.firebaserc
-firebase.json
 
 .env
 .vscode/
