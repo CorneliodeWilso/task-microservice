@@ -9,7 +9,7 @@ import { ATOM_FIREBASE_API_KEY } from "../../../index";
 
 export class AuthController {
  static async login(req: Request, res: Response) {
-
+    
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -21,8 +21,10 @@ export class AuthController {
     }
 
     try {
-      const apiKey = ATOM_FIREBASE_API_KEY.value();
+            console.log('Using Firebase API KEY:');
 
+      const apiKey = ATOM_FIREBASE_API_KEY.value();
+      console.log('Using Firebase API KEY:', apiKey?.substring(0, 6));
       const firebaseResponse = await fetch(
         `${CONSTANTS.googleApi}signInWithPassword?key=${apiKey}`,
         {
