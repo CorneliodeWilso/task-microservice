@@ -23,6 +23,12 @@ jobs:
 
       - name: Build TypeScript
         run: npm run build
+      
+      - name: Debug Firebase config
+        run: |
+          pwd
+          ls -la
+          ls -la firebase.json
 
       - name: Deploy Firebase Functions
         env:
