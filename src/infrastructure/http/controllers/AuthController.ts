@@ -5,6 +5,7 @@ import { ResponseModel } from "../../../domain/models/ResponseModel";
 import { RESPONSE_CODES } from "../../../domain/constants/responseCodes.constants";
 import { AUTH_MESSAGES } from "../../../domain/constants/auth.constants";
 import { CONSTANTS } from "../../../domain/constants/contants";
+import { ATOM_FIREBASE_API_KEY } from "../../../index";
 
 export class AuthController {
  static async login(req: Request, res: Response) {
@@ -20,7 +21,7 @@ export class AuthController {
     }
 
     try {
-      const apiKey = process.env.ATOM_FIREBASE_API_KEY;
+      const apiKey = ATOM_FIREBASE_API_KEY.value();
 
       const firebaseResponse = await fetch(
         `${CONSTANTS.googleApi}signInWithPassword?key=${apiKey}`,
@@ -79,7 +80,7 @@ export class AuthController {
     }
 
     try {
-      const apiKey = process.env.ATOM_FIREBASE_API_KEY;
+      const apiKey = ATOM_FIREBASE_API_KEY.value();
 
       const firebaseResponse = await fetch(
         `${CONSTANTS.googleApi}signUp?key=${apiKey}`,
