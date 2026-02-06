@@ -1,24 +1,32 @@
 import { Request, Response } from "express";
 import fetch from "node-fetch";
 import * as admin from "firebase-admin";
+import { ResponseModel } from "../../../domain/models/ResponseModel";
+import { RESPONSE_CODES } from "../../../domain/constants/responseCodes.constants";
+import { AUTH_MESSAGES } from "../../../domain/constants/auth.constants";
+import { CONSTANTS } from "../../../domain/constants/contants";
+
 export class AuthController {
-    
-  static async login(req: Request, res: Response) {
+ static async login(req: Request, res: Response) {
 
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
+      const response = new ResponseModel(
+        RESPONSE_CODES.BAD_REQUEST,
+        AUTH_MESSAGES.EMAIL_PASSWORD_REQUIRED
+      );
+      return res.status(response.code).json(response);
     }
 
     try {
       const apiKey = process.env.ATOM_FIREBASE_API_KEY;
 
-      const response = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+      const firebaseResponse = await fetch(
+        `${CONSTANTS.googleApi}signInWithPassword?key=${apiKey}`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
             password,
@@ -27,68 +35,91 @@ export class AuthController {
         }
       );
 
-      const data: any = await response.json();
+      const data: any = await firebaseResponse.json();
 
-      if (!response.ok) {
-        return res.status(401).json({ message: "Invalid credentials", error: data });
+      if (!firebaseResponse.ok) {
+        const response = new ResponseModel(
+          RESPONSE_CODES.UNAUTHORIZED,
+          AUTH_MESSAGES.INVALID_CREDENTIALS
+        );
+        return res.status(response.code).json(response);
       }
 
-      // ✅ Firebase devuelve idToken
-      return res.json({
-        token: data.idToken,
-        refreshToken: data.refreshToken
-      });
+      const response = new ResponseModel(
+        RESPONSE_CODES.SUCCESS,
+        AUTH_MESSAGES.LOGIN_SUCCESS,
+        {
+          token: data.idToken,
+          refreshToken: data.refreshToken
+        }
+      );
+
+      return res.status(response.code).json(response);
 
     } catch (error) {
-      res.status(500).json({ message: "Login failed" });
+      const response = new ResponseModel(
+        RESPONSE_CODES.INTERNAL_ERROR,
+        AUTH_MESSAGES.LOGIN_FAILED
+      );
+      return res.status(response.code).json(response);
     }
   }
+
 
  static async register(req: Request, res: Response) {
 
-  const { email, password } = req.body;
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({
-      message: "Email and password are required"
-    });
-  }
-
-  try {
-    const apiKey = process.env.ATOM_FIREBASE_API_KEY;
-
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          returnSecureToken: true
-        })
-      }
-    );
-
-    const data: any = await response.json();
-
-    if (!response.ok) {
-      return res.status(400).json({
-        message: "Register failed",
-        error: data.error?.message
-      });
+    if (!email || !password) {
+      const response = new ResponseModel(
+        RESPONSE_CODES.BAD_REQUEST,
+        AUTH_MESSAGES.EMAIL_PASSWORD_REQUIRED
+      );
+      return res.status(response.code).json(response);
     }
 
-    // ✅ Firebase devuelve idToken real
-    return res.status(201).json({
-      message: "User created successfully",
-      token: data.idToken
-    });
+    try {
+      const apiKey = process.env.ATOM_FIREBASE_API_KEY;
 
-  } catch (error) {
-    return res.status(500).json({
-      message: "Register error"
-    });
+      const firebaseResponse = await fetch(
+        `${CONSTANTS.googleApi}signUp?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            returnSecureToken: true
+          })
+        }
+      );
+
+      const data: any = await firebaseResponse.json();
+
+      if (!firebaseResponse.ok) {
+        const response = new ResponseModel(
+          RESPONSE_CODES.BAD_REQUEST,
+          AUTH_MESSAGES.REGISTER_FAILED
+        );
+        return res.status(response.code).json(response);
+      }
+
+      const response = new ResponseModel(
+        RESPONSE_CODES.SUCCESS,
+        AUTH_MESSAGES.REGISTER_SUCCESS,
+        {
+          token: data.idToken
+        }
+      );
+
+      return res.status(response.code).json(response);
+
+    } catch (error) {
+      const response = new ResponseModel(
+        RESPONSE_CODES.INTERNAL_ERROR,
+        AUTH_MESSAGES.REGISTER_ERROR
+      );
+      return res.status(response.code).json(response);
+    }
   }
-}
 }

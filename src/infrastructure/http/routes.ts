@@ -4,9 +4,6 @@ import { authMiddleware } from "./middlewares/auth.middleware";
 import { AuthController } from "./controllers/AuthController";
 
 const router = Router();
-
-router.get("/health", (_, res) => res.json({ status: "ok" }));
-
 router.get("/tasks", authMiddleware, TaskController.getAll);
 router.post("/tasks", authMiddleware, TaskController.create);
 router.get("/tasks/:id", authMiddleware, TaskController.getById);
